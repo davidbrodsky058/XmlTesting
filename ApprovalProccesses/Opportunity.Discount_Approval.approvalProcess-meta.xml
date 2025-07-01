@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ApprovalProcess xmlns="http://soap.sforce.com/2006/04/metadata">
+    <!-- General Settings -->
+    <active>true</active>
+    <allowRecall>false</allowRecall>
+    <label>Opportunity Discount Approval</label>
+    <name>Opportunity_Discount_Approval</name>
+
+    <!-- Initial Submitters -->
+    <initialSubmitters>
+        <type>submitter</type>
+    </initialSubmitters>
+
+    <!-- Entry Criteria: Any Opportunity with a Discount Field populated -->
+    <entryCriteria>
+        <criteriaItems>
+            <field>Opportunity.Discount__c</field>
+            <operation>notEqual</operation>
+            <value></value>
+        </criteriaItems>
+        <booleanFilter>1</booleanFilter>
+    </entryCriteria>
+
+    <!-- Approval Page Fields -->
+    <approvalPageFields>
+        <field>Opportunity.Name</field>
+        <field>Opportunity.Amount</field>
+        <field>Opportunity.Discount__c</field>
+    </approvalPageFields>
+
+    <!-- Step 1: Manager Approval for discounts up to 5% -->
+    <steps>
+        <approvalStep>
+            <name>Manager Discount Approval</name>
+            <entryCriteria>
+                <criteriaItems>
+                    <field>Opportunity.Discount__c</field>
+                    <operation>lessOrEqual</operation>
+                    <value>5</value>
+                </criteriaItems>
+                <booleanFilter>1</booleanFilter>
+            </entryCriteria>
+            <assignedApprover>
+                <type>manager</type>
+            </assignedApprover>
+            <allowDelegate>true</allowDelegate>
+            <actions>
+                <fieldUpdate>
+                    <field>Opportunity.StageName</field>
+                    <targetField>Manager Approved</targetField>
+                </fieldUpdate>
+            </actions>
+        </approvalStep>
+
+        <!-- Step 2: Director Approval for discounts >5% and <=10% -->
+        <approvalStep>
+            <name>Director Discount Approval</name>
+            <entryCriteria>
+                <criteriaItems>
+                    <field>Opportunity.Discount__c</field>
+                    <operation>greaterThan</operation>
+                    <value>5</value>
+                </criteriaItems>
+                <criteriaItems>
+                    <field>Opportunity.Discount__c</field>
+                    <operation>lessOrEqual</operation>
+                    <value>10</value>
+                </criteriaItems>
+                <booleanFilter>1 AND 2</booleanFilter>
+            </entryCriteria>
+            <assignedApprover>
+                <type>role</type>
+                <value>Sales Director</value>
+            </assignedApprover>
+            <actions>
+                <emailAlert>
+                    <template>Notify_Director_Approval</template>
+                </emailAlert>
+            </actions>
+        </approvalStep>
+
+        <!-- Step 3: VP Approval for discounts >10% -->
+        <approvalStep>
+            <name>VP Discount Approval</name>
+            <entryCriteria>
+                <criteriaItems>
+                    <field>Opportunity.Discount__c</field>
+                    <operation>greaterThan</operation>
+                    <value>10</value>
+                </criteriaItems>
+                <booleanFilter>1</booleanFilter>
+            </entryCriteria>
+            <assignedApprover>
+                <type>queue</type>
+                <value>VP_Approvals_Queue</value>
+            </assignedApprover>
+            <actions>
+                <fieldUpdate>
+                    <field>Opportunity.StageName</field>
+                    <targetField>VP Approved</targetField>
+                </fieldUpdate>
+            </actions>
+        </approvalStep>
+    </steps>
+
+    <!-- Final Approval Actions -->
+    <finalApprovalActions>
+        <fieldUpdate>
+            <field>Opportunity.StageName</field>
+            <targetField>Closed Won</targetField>
+        </fieldUpdate>
+        <emailAlert>
+            <template>Notify_Opp_FinalApproval</template>
+        </emailAlert>
+    </finalApprovalActions>
+
+    <!-- Final Rejection Actions -->
+    <finalRejectionActions>
+        <fieldUpdate>
+            <field>Opportunity.StageName</field>
+            <targetField>Closed Lost</targetField>
+        </fieldUpdate>
+    </finalRejectionActions>
+</ApprovalProcess>
