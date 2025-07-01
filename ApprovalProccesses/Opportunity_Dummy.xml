@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ApprovalProcess xmlns="http://soap.sforce.com/2006/04/metadata">
+    <!-- General Settings -->
+    <active>true</active>
+    <allowRecall>true</allowRecall>
+    <label>High Value Opportunity Approval</label>
+    <name>High_Value_Opportunity_Approval</name>
+
+    <!-- Initial Submitters -->
+    <initialSubmitters>
+        <type>manager</type>
+    </initialSubmitters>
+
+    <!-- Entry Criteria -->
+    <entryCriteria>
+        <criteriaItems>
+            <field>Opportunity.Amount</field>
+            <operation>greaterThanOrEqual</operation>
+            <value>10000</value>
+        </criteriaItems>
+        <booleanFilter>1</booleanFilter>
+    </entryCriteria>
+
+    <!-- Fields Shown on Approval Page -->
+    <approvalPageFields>
+        <field>Opportunity.Name</field>
+        <field>Opportunity.Amount</field>
+        <field>Opportunity.CloseDate</field>
+    </approvalPageFields>
+
+    <!-- Approval Steps -->
+    <steps>
+        <approvalStep>
+            <name>Manager Approval</name>
+            <entryCriteria>
+                <criteriaItems>
+                    <field>Opportunity.Amount</field>
+                    <operation>greaterThanOrEqual</operation>
+                    <value>20000</value>
+                </criteriaItems>
+                <booleanFilter>1</booleanFilter>
+            </entryCriteria>
+            <assignedApprover>
+                <type>manager</type>
+            </assignedApprover>
+            <actions>
+                <fieldUpdate>
+                    <field>Opportunity.StageName</field>
+                    <targetField>Manager Approved</targetField>
+                </fieldUpdate>
+            </actions>
+            <allowDelegate>true</allowDelegate>
+            <skipEntryCriteria>false</skipEntryCriteria>
+        </approvalStep>
+    </steps>
+
+    <!-- Final Approval Actions -->
+    <finalApprovalActions>
+        <fieldUpdate>
+            <field>Opportunity.StageName</field>
+            <targetField>Closed Won</targetField>
+        </fieldUpdate>
+    </finalApprovalActions>
+
+    <!-- Final Rejection Actions -->
+    <finalRejectionActions>
+        <fieldUpdate>
+            <field>Opportunity.StageName</field>
+            <targetField>Closed Lost</targetField>
+        </fieldUpdate>
+    </finalRejectionActions>
+
+    <!-- Rejection Actions Before Final -->
+    <rejectionActions>
+        <fieldUpdate>
+            <field>Opportunity.StageName</field>
+            <targetField>Needs Revision</targetField>
+        </fieldUpdate>
+    </rejectionActions>
+</ApprovalProcess>
